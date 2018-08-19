@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="messages" date="2017-11-17T00:55:00Z" product-name="cart_mpay24">
+        <header/>
+        <body>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.success.successfully_paid">
+                <source>The order was successfully paid.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.success.error_occured">
+                <source>An error occurred while updating the order.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.success.access_denied">
+                <source>Access denied!</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.cancel.successfully_canceled">
+                <source>The order has been canceled.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.cancel.error_occured">
+                <source>An error occurred while updating the order.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.cancel.access_denied">
+                <source>Access denied!</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

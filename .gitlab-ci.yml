@@ -1,0 +1,58 @@
+cache:
+  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+  paths:
+    - .composer/
+    - .php_cs.cache
+
+variables:
+  COMPOSER_CACHE_DIR: ".composer"
+  TYPO3_PATH_WEB: "$CI_PROJECT_DIR/.Build/Web"
+  MYSQL_DATABASE: "typo3"
+  MYSQL_ROOT_PASSWORD: "joh316"
+  typo3DatabaseName: "typo3"
+  typo3DatabaseHost: "mysql"
+  typo3DatabaseUsername: "root"
+  typo3DatabasePassword: "joh316"
+
+before_script:
+  - apk add git --update
+
+stages:
+  - lint
+
+lint:cgl:
+  image: composer:1.6
+  stage: lint
+  before_script:
+    - composer remove typo3/cms-core --no-update
+    - composer install --no-progress --no-ansi --no-interaction
+  script:
+    - .Build/bin/php-cs-fixer fix --config=Build/.php_cs.dist -v --dry-run --using-cache=no --path-mode=intersection ./
+
+lint:typoscriptcgl:
+  stage: lint
+  image: composer:1.6
+  script:
+    - composer remove typo3/cms-core --no-update
+    - composer install --no-progress --no-ansi --no-interaction
+    - .Build/bin/typoscript-lint -c tslint.yaml
+
+lint:yaml:
+  stage: lint
+  image: python:alpine3.7
+  before_script:
+    - pip install yamllint==1.10.0
+  script:
+    - yamllint -c Build/yamllint.yaml Configuration/ Resources/ .travis.yml
+
+lint:php72:
+  stage: lint
+  image: php:7.2-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;
+
+lint:php73:
+  stage: lint
+  image: php:7.3-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;

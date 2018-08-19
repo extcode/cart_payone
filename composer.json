@@ -1,0 +1,60 @@
+{
+    "name": "extcode/cart-payone",
+    "type": "typo3-cms-extension",
+    "description": "Shopping Cart(s) for TYPO3 - Payone Payment Provider",
+    "homepage": "https://cart.extco.de",
+    "license": [
+        "GPL-2.0+"
+    ],
+    "keywords": [
+        "TYPO3 CMS",
+        "Shopping Cart",
+        "Payment Provider",
+        "Payone",
+        "Cart"
+    ],
+    "authors": [
+        {
+            "name": "Daniel Gohlke",
+            "email": "ext.cart@extco.de",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/extcode/cart_payone/issues"
+    },
+    "require": {
+        "php": ">=7.2.0 <7.4",
+        "typo3/cms-core": "^9.5",
+        "typo3/cms-extbase": "^9.5",
+        "extcode/cart": "^6.3"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.0",
+        "helmich/typo3-typoscript-lint": "^1.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Extcode\\CartPayone\\": "Classes/"
+        }
+    },
+    "replace": {
+        "extcode/cart_payone": "self.version"
+    },
+    "config": {
+        "vendor-dir": ".Build/vendor",
+        "bin-dir": ".Build/bin"
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "mkdir -p .Build/Web/typo3conf/ext/",
+            "[ -L .Build/Web/typo3conf/ext/cart_payone ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/cart_payone"
+        ]
+    },
+    "extra": {
+        "typo3/cms": {
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".Build/Web"
+        }
+    }
+}

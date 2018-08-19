@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2017-11-17T00:55:00Z" product-name="cart_mpay24">
+        <header/>
+        <body>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.success.successfully_paid">
+                <source>The order was successfully paid.</source>
+                <target>Die Bestellung wurde erfolgreich bezahlt.</target>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.success.error_occured">
+                <source>An error occurred while updating the order.</source>
+                <target>Es ist ein Fehler bei der Aktualisierung der Bestellung aufgetreten.</target>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.success.access_denied">
+                <source>Access denied!</source>
+                <target>Access denied!</target>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.cancel.successfully_canceled">
+                <source>The order has been canceled.</source>
+                <target>Die Bestellung wurde abgebrochen.</target>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.cancel.error_occured">
+                <source>An error occurred while updating the order.</source>
+                <target>Es ist ein Fehler bei der Aktualisierung der Bestellung aufgetreten.</target>
+            </trans-unit>
+            <trans-unit id="tx_cartpayone.controller.order.payment.action.cancel.access_denied">
+                <source>Access denied!</source>
+                <target>Access denied!</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

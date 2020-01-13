@@ -248,7 +248,7 @@ class PaymentUtility
 
                 $this->paymentQuery['id[' . $count . ']'] = $product->getUid();
                 $this->paymentQuery['it[' . $count . ']'] = 'goods';
-                $this->paymentQuery['pr[' . $count . ']'] = round($product->getGross() * 100);
+                $this->paymentQuery['pr[' . $count . ']'] = round(($product->getGross() / $product->getCount()) * 100);
                 $this->paymentQuery['no[' . $count . ']'] = $product->getCount();
                 $this->paymentQuery['de[' . $count . ']'] = $product->getTitle();
             }

@@ -223,7 +223,7 @@ class PaymentUtility
             $this->paymentQuery['aid'] = (int)$this->conf['subAccountId'];
         }
         $this->paymentQuery['portalid'] = (int)$this->conf['portalId'];
-        if ($this->conf['sandbox'] = 1) {
+        if ($this->conf['sandbox'] === '1') {
             $this->paymentQuery['mode'] = 'test';
         } else {
             $this->paymentQuery['mode'] = 'live';

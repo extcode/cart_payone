@@ -285,7 +285,13 @@ class PaymentUtility
         $this->paymentQuery['email'] = $billingAddress->getEmail();
         $this->paymentQuery['company'] = $billingAddress->getCompany();
         $this->paymentQuery['zip'] = $billingAddress->getZip();
-        $this->paymentQuery['street'] = $billingAddress->getStreet();
+
+        if (empty($billingAddress->getStreetNumber())) {
+            $this->paymentQuery['street'] = $billingAddress->getStreet();
+        } else {
+            $this->paymentQuery['street'] = $billingAddress->getStreet() . " " . $billingAddress->getStreetNumber();
+        }
+
         $this->paymentQuery['city'] = $billingAddress->getCity();
         $this->paymentQuery['country'] = strtoupper($billingAddress->getCountry());
     }

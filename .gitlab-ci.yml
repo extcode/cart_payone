@@ -68,3 +68,10 @@ lint:php73:
   image: php:7.3-alpine
   script:
     - find . -name \*.php -exec php -l "{}" \;
+
+lint:php74:
+  stage: lint
+  image: php:7.4-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;
+

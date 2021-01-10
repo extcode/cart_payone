@@ -193,21 +193,26 @@ class PaymentUtility
     protected function calculateQueryHash()
     {
         ksort($this->paymentQuery);
+
+        $strToHash = '';
         foreach ($this->paymentQuery as $key => $val) {
-            $this->paymentQuery['hash'] .= $val;
+            if ($key === 'wallettype') {
+                continue;
+            }
+            $strToHash .= $val;
         }
 
         switch ($this->conf['hashAlgorithm']) {
             case 'md5':
                 $this->paymentQuery['hash'] = md5(
-                    $this->paymentQuery['hash'] . $this->conf['key']
+                    $strToHash . $this->conf['key']
                 );
                 break;
             case 'sha2-384':
             default:
                 $this->paymentQuery['hash'] = hash_hmac(
                     'sha384',
-                    $this->paymentQuery['hash'],
+                    $strToHash,
                     $this->conf['key']
                 );
         }

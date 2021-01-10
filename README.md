@@ -26,8 +26,8 @@ Download and install the extension with the extension manager module.
 
 | Cart Payone   | Cart       | TYPO3      | PHP       | Support/Development                     |
 | ------------- | ---------- | ---------- | ----------|---------------------------------------- |
-| 2.x.x         | 6.3.0      | 9.5        | 7.2 - 7.3 | Features, Bugfixes, Security Updates    |
-| 1.x.x         | 5.3.0      | 8.7        | 7.0 - 7.3 | Features, Bugfixes, Security Updates    |
+| 2.x.x         | 6.3.0      | 9.5        | 7.2 - 7.4 | Features, Bugfixes, Security Updates    |
+| 1.x.x         | 5.3.0      | 8.7        | 7.0 - 7.4 | Features, Bugfixes, Security Updates    |
 
 ### 3.2. Changelog
 

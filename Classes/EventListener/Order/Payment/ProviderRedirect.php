@@ -1,23 +1,32 @@
 <?php
+declare(strict_types=1);
+namespace Extcode\CartPayone\EventListener\Order\Payment;
 
-namespace Extcode\CartPayone\Utility;
+/*
+ * This file is part of the package extcode/cart-payone.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
 
+use Extcode\Cart\Domain\Model\Cart;
+use Extcode\Cart\Domain\Model\Order\Item as OrderItem;
 use Extcode\Cart\Domain\Repository\CartRepository;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Extcode\Cart\Domain\Repository\Order\PaymentRepository;
+use Extcode\Cart\Event\Order\PaymentEvent;
+use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
-use TYPO3\CMS\Extbase\Mvc\Web\Request;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
-class PaymentUtility
+class ProviderRedirect
 {
     const PAYMENT_API_URL = 'https://frontend.pay1.de/frontend/v2/';
 
     /**
-     * @var ObjectManager
+     * @var OrderItem
      */
-    protected $objectManager;
+    protected $orderItem;
 
     /**
      * @var PersistenceManager
@@ -30,9 +39,24 @@ class PaymentUtility
     protected $configurationManager;
 
     /**
+     * @var TypoScriptService
+     */
+    protected $typoScriptService;
+
+    /**
+     * @var UriBuilder
+     */
+    protected $uriBuilder;
+
+    /**
      * @var CartRepository
      */
     protected $cartRepository;
+
+    /**
+     * @var PaymentRepository
+     */
+    protected $paymentRepository;
 
     /**
      * @var array
@@ -45,139 +69,89 @@ class PaymentUtility
     protected $cartConf = [];
 
     /**
-     * Payment Query Url
-     *
-     * @var string
-     */
-    protected $paymentQueryUrl = self::PAYMENT_API_URL;
-
-    /**
-     * Payment Query
-     *
-     * @var array
-     */
-    protected $paymentQuery = [];
-
-    /**
-     * Order Item
-     *
-     * @var \Extcode\Cart\Domain\Model\Order\Item
-     */
-    protected $orderItem = null;
-
-    /**
-     * Cart
-     *
-     * @var \Extcode\Cart\Domain\Model\Cart\Cart
-     */
-    protected $cart = null;
-
-    /**
-     * CartFHash
-     *
      * @var string
      */
     protected $cartFHash = '';
 
     /**
-     * CartSHash
-     *
      * @var string
      */
     protected $cartSHash = '';
 
     /**
-     * @param \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager $persistenceManager
+     * @var array
      */
-    public function injectPersistenceManager(
-        \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager $persistenceManager
+    protected $paymentQuery = [];
+
+    public function __construct(
+        ConfigurationManager $configurationManager,
+        PersistenceManager $persistenceManager,
+        TypoScriptService $typoScriptService,
+        UriBuilder $uriBuilder,
+        CartRepository $cartRepository,
+        PaymentRepository $paymentRepository
     ) {
+        $this->configurationManager = $configurationManager;
         $this->persistenceManager = $persistenceManager;
-    }
-
-    /**
-     * Intitialize
-     */
-    public function __construct()
-    {
-        $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-            \TYPO3\CMS\Extbase\Object\ObjectManager::class
-        );
-
-        $this->configurationManager = $this->objectManager->get(
-            \TYPO3\CMS\Extbase\Configuration\ConfigurationManager::class
-        );
+        $this->typoScriptService = $typoScriptService;
+        $this->uriBuilder = $uriBuilder;
+        $this->cartRepository = $cartRepository;
+        $this->paymentRepository = $paymentRepository;
 
         $this->conf = $this->configurationManager->getConfiguration(
-            \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
+            ConfigurationManager::CONFIGURATION_TYPE_FRAMEWORK,
             'CartPayone'
         );
 
         $this->cartConf = $this->configurationManager->getConfiguration(
-            \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
+            ConfigurationManager::CONFIGURATION_TYPE_FRAMEWORK,
             'Cart'
         );
     }
 
-    /**
-     * @param array $params
-     *
-     * @return array
-     */
-    public function handlePayment(array $params): array
+    public function __invoke(PaymentEvent $event): void
     {
-        $this->orderItem = $params['orderItem'];
+        $this->orderItem = $event->getOrderItem();
 
-        $provider = $this->orderItem->getPayment()->getProvider();
+        $payment = $this->orderItem->getPayment();
+        $provider = $payment->getProvider();
         list($provider, $clearingType, $walletType) = explode('_', $provider);
 
-        if ($provider === 'PAYONE') {
-            $params['providerUsed'] = true;
-
-            $this->cart = $params['cart'];
-
-            $this->paymentQuery['amount'] = round($this->orderItem->getTotalGross() * 100);
-            $feUser = $this->orderItem->getFeUser();
-            if ($feUser) {
-                $this->paymentQuery['customerid'] = $feUser->getUid();
-            }
-
-            $this->paymentQuery['clearingtype'] = '';
-            if (in_array($clearingType, ['ELV', 'CC', 'REC', 'COD', 'VOR', 'SB', 'FCN'])) {
-                $this->paymentQuery['clearingtype'] = strtolower($clearingType);
-            } elseif ($clearingType === 'WLT' && in_array($walletType, ['ALP', 'PDT', 'PPE'])) {
-                $this->paymentQuery['clearingtype'] = strtolower($clearingType);
-                $this->paymentQuery['wallettype'] = $walletType;
-            }
-
-            $cart = $this->objectManager->get(
-                \Extcode\Cart\Domain\Model\Cart::class
-            );
-            $cart->setOrderItem($this->orderItem);
-            $cart->setCart($this->cart);
-            $cart->setPid($this->cartConf['settings']['order']['pid']);
-
-            $cartRepository = $this->objectManager->get(
-                \Extcode\Cart\Domain\Repository\CartRepository::class
-            );
-            $cartRepository->add($cart);
-            $this->persistenceManager->persistAll();
-
-            $this->cartFHash = $cart->getFHash();
-            $this->cartSHash = $cart->getSHash();
-
-            header('Location: ' . self::PAYMENT_API_URL . '?' . $this->getQuery());
+        if ($provider !== 'PAYONE') {
+            return;
         }
 
-        return [$params];
+        $this->paymentQuery['amount'] = round($this->orderItem->getTotalGross() * 100);
+        $feUser = $this->orderItem->getFeUser();
+        if ($feUser) {
+            $this->paymentQuery['customerid'] = $feUser->getUid();
+        }
+
+        $this->paymentQuery['clearingtype'] = '';
+        if (in_array($clearingType, ['ELV', 'CC', 'REC', 'COD', 'VOR', 'SB', 'FCN'])) {
+            $this->paymentQuery['clearingtype'] = strtolower($clearingType);
+        } elseif ($clearingType === 'WLT' && in_array($walletType, ['ALP', 'PDT', 'PPE'])) {
+            $this->paymentQuery['clearingtype'] = strtolower($clearingType);
+            $this->paymentQuery['wallettype'] = $walletType;
+        }
+
+        $cart = new Cart();
+        $cart->setOrderItem($this->orderItem);
+        $cart->setCart($event->getCart());
+        $cart->setPid((int)$this->cartConf['settings']['order']['pid']);
+
+        $this->cartRepository->add($cart);
+        $this->persistenceManager->persistAll();
+
+        $this->cartFHash = $cart->getFHash();
+        $this->cartSHash = $cart->getSHash();
+
+        header('Location: ' . self::PAYMENT_API_URL . '?' . $this->getQuery());
+
+        $event->setPropagationStopped(true);
     }
 
-    /**
-     * Builds the query for pay one
-     *
-     * @return string
-     */
-    protected function getQuery()
+    protected function getQuery(): string
     {
         $this->getQueryFromSettings();
         $this->getQueryFromCart();
@@ -187,10 +161,7 @@ class PaymentUtility
         return http_build_query($this->paymentQuery);
     }
 
-    /**
-     * Calculate the hash based on arguments, it's values, and choosen algorithm.
-     */
-    protected function calculateQueryHash()
+    protected function calculateQueryHash(): void
     {
         ksort($this->paymentQuery);
 
@@ -218,10 +189,7 @@ class PaymentUtility
         }
     }
 
-    /**
-     * Get Query From Setting
-     */
-    protected function getQueryFromSettings()
+    protected function getQueryFromSettings(): void
     {
         $this->paymentQuery['aid'] = (int)$this->conf['merchantId'];
         if ((int)$this->conf['subAccountId']) {
@@ -240,17 +208,13 @@ class PaymentUtility
         $this->addPaymentQueryReturnUrls();
     }
 
-    /**
-     * Get Query From Cart
-     */
-    protected function getQueryFromCart()
+    protected function getQueryFromCart(): void
     {
         $count = 0;
 
         if ($this->orderItem->getProducts()) {
             foreach ($this->orderItem->getProducts() as $productKey => $product) {
                 ++$count;
-
                 $this->paymentQuery['id[' . $count . ']'] = $product->getUid();
                 $this->paymentQuery['it[' . $count . ']'] = 'goods';
                 $this->paymentQuery['pr[' . $count . ']'] = round(($product->getGross() / $product->getCount()) * 100);
@@ -278,10 +242,7 @@ class PaymentUtility
         }
     }
 
-    /**
-     * Get Query From Order
-     */
-    protected function getQueryFromOrder()
+    protected function getQueryFromOrder(): void
     {
         $billingAddress = $this->orderItem->getBillingAddress();
 
@@ -301,22 +262,15 @@ class PaymentUtility
      * one for payment success
      * one for payment cancel
      */
-    protected function addPaymentQueryReturnUrls()
+    protected function addPaymentQueryReturnUrls(): void
     {
         $this->paymentQuery['successurl'] = $this->buildReturnUrl('success', $this->cartSHash);
         $this->paymentQuery['backurl'] = $this->buildReturnUrl('cancel', $this->cartFHash);
     }
 
-    /**
-     * Builds a return URL to Cart order controller action
-     *
-     * @param string $action
-     * @param string $hash
-     * @return string
-     */
     protected function buildReturnUrl(string $action, string $hash) : string
     {
-        $pid = $this->cartConf['settings']['cart']['pid'];
+        $pid = (int)$this->cartConf['settings']['cart']['pid'];
 
         $arguments = [
             'tx_cartpayone_cart' => [
@@ -327,28 +281,13 @@ class PaymentUtility
             ]
         ];
 
-        $uriBuilder = $this->getUriBuilder();
+        $uriBuilder = $this->uriBuilder;
 
         return $uriBuilder->reset()
             ->setTargetPageUid($pid)
-            ->setTargetPageType($this->conf['redirectTypeNum'])
+            ->setTargetPageType((int)$this->conf['redirectTypeNum'])
             ->setCreateAbsoluteUri(true)
-            ->setUseCacheHash(false)
             ->setArguments($arguments)
             ->build();
-    }
-
-    /**
-     * @return UriBuilder
-     */
-    protected function getUriBuilder(): UriBuilder
-    {
-        $request = $this->objectManager->get(Request::class);
-        $request->setRequestURI(GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
-        $request->setBaseURI(GeneralUtility::getIndpEnv('TYPO3_SITE_URL'));
-        $uriBuilder = $this->objectManager->get(UriBuilder::class);
-        $uriBuilder->setRequest($request);
-
-        return $uriBuilder;
     }
 }

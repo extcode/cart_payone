@@ -1,0 +1,35 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Extcode\CartPayone\:
+    resource: '../Classes/*'
+    exclude: '../Classes/Widgets/*'
+
+  Extcode\CartPayone\EventListener\Order\Payment\ClearCart:
+    tags:
+      - name: event.listener
+        identifier: 'cart-payone--order--payment--clear-cart'
+        event: Extcode\Cart\Event\Order\PaymentEvent
+        before: 'cart-payone--order--payment--provider-redirect'
+
+  Extcode\CartPayone\EventListener\Order\Payment\ProviderRedirect:
+    arguments:
+      $configurationManager: '@TYPO3\CMS\Extbase\Configuration\ConfigurationManager'
+      $persistenceManager: '@TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager'
+      $typoScriptService: '@TYPO3\CMS\Core\TypoScript\TypoScriptService'
+      $cartRepository: '@Extcode\Cart\Domain\Repository\CartRepository'
+      $paymentRepository: '@Extcode\Cart\Domain\Repository\Order\PaymentRepository'
+    tags:
+      - name: event.listener
+        identifier: 'cart-payone--order--payment--provider-redirect'
+        event: Extcode\Cart\Event\Order\PaymentEvent
+
+  Extcode\CartPayone\EventListener\Order\Finish\Email:
+    class: 'Extcode\Cart\EventListener\ProcessOrderCreate\Email'
+    tags:
+      - name: event.listener
+        identifier: 'cart-payone--order--finish--email'
+        event: Extcode\CartPayone\Event\Order\FinishEvent

@@ -20,17 +20,4 @@ plugin.tx_cartpayone {
     redirectTypeNum = {$plugin.tx_cartpayone.redirectTypeNum}
 
     request = authorization
-
-    finishers {
-        order {
-            success {
-                400 {
-                    class = Extcode\Cart\Domain\Finisher\Order\EmailFinisher
-                }
-                500 {
-                    class = Extcode\Cart\Domain\Finisher\Order\ClearCartFinisher
-                }
-            }
-        }
-    }
 }

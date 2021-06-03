@@ -23,38 +23,54 @@
     "support": {
         "issues": "https://github.com/extcode/cart_payone/issues"
     },
-    "require": {
-        "php": ">=7.2.0 <7.5",
-        "typo3/cms-core": "^9.5",
-        "typo3/cms-extbase": "^9.5",
-        "extcode/cart": "^6.3"
-    },
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.0",
-        "helmich/typo3-typoscript-lint": "^1.4"
-    },
     "autoload": {
         "psr-4": {
             "Extcode\\CartPayone\\": "Classes/"
         }
     },
-    "replace": {
-        "extcode/cart_payone": "self.version"
-    },
     "config": {
-        "vendor-dir": ".Build/vendor",
-        "bin-dir": ".Build/bin"
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "mkdir -p .Build/Web/typo3conf/ext/",
-            "[ -L .Build/Web/typo3conf/ext/cart_payone ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/cart_payone"
-        ]
+        "bin-dir": ".build/bin",
+        "vendor-dir": ".build/vendor"
     },
     "extra": {
         "typo3/cms": {
-            "cms-package-dir": "{$vendor-dir}/typo3/cms",
-            "web-dir": ".Build/Web"
+            "extension-key": "cart_payone",
+            "app-dir": ".build",
+            "web-dir": ".build/public"
         }
+    },
+    "require": {
+        "php": ">=7.2.0 <7.5",
+        "typo3/cms-core": "^10.4",
+        "typo3/cms-extbase": "^10.4",
+        "extcode/cart": "^7.4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.14",
+        "helmich/typo3-typoscript-lint": "^2.0",
+        "overtrue/phplint": "^1.1"
+    },
+    "scripts": {
+       "test:cgl": [
+            ".build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --using-cache=no --path-mode=intersection ./"
+        ],
+        "test:php:lint": [
+            ".build/bin/phplint -c Build/phplint.yaml"
+        ],
+        "test:typoscript:lint": [
+            ".build/bin/typoscript-lint -c Build/typoscriptlint.yaml Configuration"
+        ],
+        "test:php": [
+            "@test:php:lint"
+        ],
+        "test:all": [
+            "@test:cgl",
+            "@test:php",
+            "@test:typoscript:lint"
+        ],
+        "post-autoload-dump": [
+            "mkdir -p .build/public/typo3conf/ext/",
+            "[ -L .build/public/typo3conf/ext/cart_payone ] || ln -snvf ../../../../. .build/public/typo3conf/ext/cart_payone"
+        ]
     }
 }

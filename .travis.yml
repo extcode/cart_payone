@@ -6,11 +6,11 @@ matrix:
   fast_finish: true
   include:
     - php: 7.2
-      env: TYPO3_VERSION=^9.5
+      env: TYPO3_VERSION=^10.4
     - php: 7.3
-      env: TYPO3_VERSION=^9.5
+      env: TYPO3_VERSION=^10.4
     - php: 7.4
-      env: TYPO3_VERSION=^9.5
+      env: TYPO3_VERSION=^10.4
 
 cache:
   directories:
@@ -34,15 +34,15 @@ before_install:
 before_script:
   - composer require typo3/cms-core=$TYPO3_VERSION
   - git checkout composer.json
-  - export TYPO3_PATH_WEB="$PWD/.Build/Web"
+  - export TYPO3_PATH_WEB="$PWD/.build/public"
 
 script:
   - >
     echo;
     echo "Running php lint";
-    find . -name \*.php ! -path "./.Build/*" | parallel --gnu php -d display_errors=stderr -l {} > /dev/null \;
+    find . -name \*.php ! -path "./.build/*" | parallel --gnu php -d display_errors=stderr -l {} > /dev/null \;
 
   - >
     echo;
     echo "Running php-cs-fixer";
-    .Build/bin/php-cs-fixer fix --config=Build/.php_cs.dist -v --dry-run --using-cache=no --path-mode=intersection ./;
+    .build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --dry-run --using-cache=no --path-mode=intersection ./;

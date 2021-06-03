@@ -6,7 +6,7 @@ cache:
 
 variables:
   COMPOSER_CACHE_DIR: ".composer"
-  TYPO3_PATH_WEB: "$CI_PROJECT_DIR/.Build/Web"
+  TYPO3_PATH_WEB: "$CI_PROJECT_DIR/.build/public"
   MYSQL_DATABASE: "typo3"
   MYSQL_ROOT_PASSWORD: "joh316"
   typo3DatabaseName: "typo3"
@@ -19,23 +19,27 @@ before_script:
 
 stages:
   - lint
+  - documentation
+  - analysis
 
 lint:cgl:
-  image: composer:1.6
   stage: lint
+  image: composer:2
   before_script:
+    - composer config platform.php 7.4
     - composer remove typo3/cms-core --no-update
     - composer install --no-progress --no-ansi --no-interaction
   script:
-    - .Build/bin/php-cs-fixer fix --config=Build/.php_cs.dist -v --dry-run --using-cache=no --path-mode=intersection ./
+    - .build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --dry-run --using-cache=no --path-mode=intersection ./
 
 lint:typoscriptcgl:
   stage: lint
-  image: composer:1.6
+  image: composer:2
   script:
+    - composer config platform.php 7.4
     - composer remove typo3/cms-core --no-update
     - composer install --no-progress --no-ansi --no-interaction
-    - .Build/bin/typoscript-lint -c tslint.yaml
+    - .build/bin/typoscript-lint -c tslint.yaml
 
 lint:yaml:
   stage: lint
@@ -63,3 +67,50 @@ lint:php74:
   script:
     - find . -name \*.php -exec php -l "{}" \;
 
+documentation:
+  stage: documentation
+  image:
+    name: t3docs/render-documentation:v2.4.0
+    entrypoint: [""]
+  before_script:
+    - cp -a ${CI_PROJECT_DIR}/. /PROJECT
+    - mkdir -p ${CI_PROJECT_DIR}/Documentation-GENERATED-temp
+  script:
+    - cd /ALL/venv
+    - /ALL/Menu/mainmenu.sh makehtml-no-cache -c resultdir ${CI_PROJECT_DIR}/Documentation-GENERATED-temp
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/Documentation-GENERATED-temp/Result/project/0.0.0
+    expire_in: 1 day
+    when: always
+
+sonarqube:
+  stage: analysis
+  image: ciricihq/gitlab-sonar-scanner
+  variables:
+    SONAR_URL: "https://sonar.extco.de"
+    SONAR_PROJECT_NAME: "$CI_PROJECT_NAME"
+    SONAR_TOKEN: "$SONAR_TOKEN"
+    SONAR_PROJECT_VERSION: "$CI_JOB_ID"
+    SONAR_ANALYSIS_MODE: "issues"
+    SONAR_SOURCES: "./Classes"
+    SONAR_GITLAB_PROJECT_ID: "$CI_PROJECT_ID"
+  script:
+    - echo "sonar.projectKey=cart_payone-3.x" > sonar-project.properties
+    - gitlab-sonar-scanner -Dsonar.php.coverage.reportPath=phpunit.coverage.xml -Dsonar.php.tests.reportPath=phpunit.report.xml
+  allow_failure: true
+
+sonarqube-reports:
+  stage: analysis
+  image: ciricihq/gitlab-sonar-scanner
+  variables:
+    SONAR_URL: "https://sonar.extco.de"
+    SONAR_PROJECT_NAME: "$CI_PROJECT_NAME"
+    SONAR_TOKEN: "$SONAR_TOKEN"
+    SONAR_PROJECT_VERSION: "$CI_JOB_ID"
+    SONAR_ANALYSIS_MODE: "publish"
+    SONAR_SOURCES: "./Classes"
+    SONAR_TESTS: "./Tests"
+  script:
+    - echo "sonar.projectKey=cart_payone-3.x" > sonar-project.properties
+    - gitlab-sonar-scanner -Dsonar.php.coverage.reportPath=phpunit.coverage.xml -Dsonar.php.tests.reportPath=phpunit.report.xml

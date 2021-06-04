@@ -1,7 +1,6 @@
 # Cart Payone
 
-[![Build Status](https://travis-ci.org/extcode/cart_payone.svg?branch=master)](https://travis-ci.org/extcode/cart_payone)
-[![StyleCI](https://github.styleci.io/repos/75558792/shield?branch=master)](https://github.styleci.io/repos/75558792)
+[![Build Status](https://travis-ci.org/extcode/cart_payone.svg?branch=2.x)](https://travis-ci.org/extcode/cart_payone)
 
 Cart is a small but powerful extension which "solely" adds a shopping cart to your TYPO3 installation.
 Cart Payone is a payment provider.
@@ -14,7 +13,7 @@ Cart Payone is a payment provider.
 
 #### Installation using Composer
 
-The recommended way to install the extension is by using [Composer][2]. In your Composer based TYPO3 project root, just do `composer require extcode/cart-payone`. 
+The recommended way to install the extension is by using [Composer][2]. In your Composer based TYPO3 project root, just do `composer require extcode/cart-payone`.
 
 #### Installation as extension from TYPO3 Extension Repository (TER)
 
@@ -26,8 +25,9 @@ Download and install the extension with the extension manager module.
 
 | Cart Payone   | Cart       | TYPO3      | PHP       | Support/Development                     |
 | ------------- | ---------- | ---------- | ----------|---------------------------------------- |
+| 3.x.x         | 7.2.0      | 10.4       | 7.2 - 7.4 | Features, Bugfixes, Security Updates    |
 | 2.x.x         | 6.3.0      | 9.5        | 7.2 - 7.4 | Features, Bugfixes, Security Updates    |
-| 1.x.x         | 5.3.0      | 8.7        | 7.0 - 7.4 | Features, Bugfixes, Security Updates    |
+| 1.x.x         | 5.3.0      | 8.7        | 7.0 - 7.4 | Features, Bugfixes                      |
 
 ### 3.2. Changelog
 
@@ -42,9 +42,10 @@ News uses **semantic versioning** which basically means for you, that
 
 ## 4. Sponsoring
 
-*  Ask for an invoice.
-*  [GitHub Sponsors](https://github.com/sponsors/extcode)
-*  [PayPal.Me](https://paypal.me/extcart)
+* Ask for an invoice.
+* [GitHub Sponsors](https://github.com/sponsors/extcode)
+* [PayPal.Me](https://paypal.me/extcart)
+* [Patreon](https://patreon.com/ext_cart)
 
 [1]: https://docs.typo3.org/typo3cms/extensions/cart_events/
 [2]: https://getcomposer.org/

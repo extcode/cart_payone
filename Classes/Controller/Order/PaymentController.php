@@ -101,7 +101,7 @@ class PaymentController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
         if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
             $hash = $this->request->getArgument('hash');
 
-            $querySettings = new Typo3QuerySettings();
+            $querySettings = $this->cartRepository->createQuery()->getQuerySettings();
             $querySettings->setStoragePageIds([$this->cartPluginSettings['settings']['order']['pid']]);
             $this->cartRepository->setDefaultQuerySettings($querySettings);
 
@@ -150,7 +150,7 @@ class PaymentController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
         if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
             $hash = $this->request->getArgument('hash');
 
-            $querySettings = new Typo3QuerySettings();
+            $querySettings = $this->cartRepository->createQuery()->getQuerySettings();
             $querySettings->setStoragePageIds([$this->cartPluginSettings['settings']['order']['pid']]);
             $this->cartRepository->setDefaultQuerySettings($querySettings);
 

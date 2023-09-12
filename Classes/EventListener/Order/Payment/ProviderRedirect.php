@@ -115,7 +115,11 @@ class ProviderRedirect
 
         $payment = $this->orderItem->getPayment();
         $provider = $payment->getProvider();
-        list($provider, $clearingType, $walletType) = explode('_', $provider);
+
+        $providerParts = explode('_', $provider);
+        $provider = $providerParts[0];
+        $clearingType = $providerParts[1];
+        $walletType = $providerParts[2] ?? null;
 
         if ($provider !== 'PAYONE') {
             return;
